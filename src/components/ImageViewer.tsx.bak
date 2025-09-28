@@ -1,0 +1,73 @@
+import { useEffect, useRef, useState } from 'react';
+import OpenSeadragon from 'openseadragon';
+import { NASAImageService } from '../services/NASAImageService';
+import type { TileSource } from '../services/NASAImageService';
+
+interface ImageViewerProps {
+  initialDate?: Date;
+  initialLayer?: string;
+  onViewerReady?: (viewer: OpenSeadragon.Viewer) => void;
+}
+
+export const ImageViewer: React.FC<ImageViewerProps> = ({
+  initialDate = new Date(),
+  initialLayer,
+  onViewerReady
+}) => {
+  const viewerRef = useRef<HTMLDivElement>(null);
+  const viewerInstance = useRef<OpenSeadragon.Viewer | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    if (!viewerRef.current || viewerInstance.current) return;
+
+    const newViewer = OpenSeadragon({
+      element: viewerRef.current,
+      prefixUrl: 'https://cdn.jsdelivr.net/npm/openseadragon@3.1/build/openseadragon/images/',
+      showNavigationControl: true,
+      loadTilesWithAjax: true,
+      ajaxHeaders: {},
+      maxImageCacheCount: 200,
+      imageLoaderLimit: 5,
+      timeout: 30000,
+      springStiffness: 6.5,
+      visibilityRatio: 1,
+      constrainDuringPan: true,
+      immediateRender: false,
+      showRotationControl: true,
+      showHomeControl: true,
+      showZoomControl: true,
+      defaultZoomLevel: 1,
+      minZoomLevel: 1,
+      maxZoomLevel: 8,
+      immediateRender: true,
+      preserveViewport: true,
+      visibilityRatio: 1,
+      homeFillsViewer: true,
+      constrainDuringPan: true
+    });
+
+    setViewer(newViewer);
+    if (onViewerReady) {
+      onViewerReady(newViewer);
+    }
+
+    return () => {
+      newViewer.destroy();
+    };
+  }, [viewer, currentTileSource.url, onViewerReady]);
+
+  // Removed unused updateImage function to fix the compile error.
+
+  return (
+    <div className="relative w-full h-full">
+      <div 
+        ref={viewerRef} 
+        className="w-full h-[calc(100vh-64px)] bg-gray-900"
+      />
+      <div className="absolute bottom-4 left-4 bg-black/50 text-white px-4 py-2 rounded-lg">
+        Viewing: {currentTileSource.date}
+      </div>
+    </div>
+  );
+};
