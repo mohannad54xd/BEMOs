@@ -169,14 +169,16 @@ export const ExplorePage = () => {
           )}
         </div>
 
-        {/* Time Slider */}
-        <div className="mt-4">
-          <div className="relative">
-            <TimeSlider 
-              onDateChange={(date) => updateViewer(date, selectedLayer)}
-            />
+        {/* Time Slider (only for temporal datasets like Earth/GIBS) */}
+        {selectedBody === 'earth' && (
+          <div className="mt-4">
+            <div className="relative">
+              <TimeSlider 
+                onDateChange={(date) => updateViewer(date, selectedLayer)}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Annotation Stats */}
         {annotations.length > 0 && (

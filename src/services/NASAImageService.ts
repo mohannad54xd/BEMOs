@@ -21,6 +21,9 @@ export interface Layer {
   baseUrl: string;
   tileFormat: string;
   maxZoom: number;
+  type?: 'xyz' | 'dzi' | 'iiif' | 'image';
+  urlOrder?: 'z-y-x' | 'z-x-y';
+  minLevel?: number;
 }
 
 const CELESTIAL_BODIES: CelestialBody[] = [
@@ -37,7 +40,7 @@ const CELESTIAL_BODIES: CelestialBody[] = [
         resolution: '250m',
         category: 'Base Layers',
         dataSource: 'NASA GIBS',
-        baseUrl: 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best',
+        baseUrl: 'https://gibs-a.earthdata.nasa.gov/wmts/epsg3857/best',
         tileFormat: 'jpg',
         maxZoom: 8
       },
@@ -48,7 +51,7 @@ const CELESTIAL_BODIES: CelestialBody[] = [
         resolution: '375m',
         category: 'Base Layers',
         dataSource: 'NASA GIBS',
-        baseUrl: 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best',
+        baseUrl: 'https://gibs-b.earthdata.nasa.gov/wmts/epsg3857/best',
         tileFormat: 'jpg',
         maxZoom: 8
       },
@@ -59,7 +62,7 @@ const CELESTIAL_BODIES: CelestialBody[] = [
         resolution: '250m',
         category: 'Base Layers',
         dataSource: 'NASA GIBS',
-        baseUrl: 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best',
+        baseUrl: 'https://gibs-c.earthdata.nasa.gov/wmts/epsg3857/best',
         tileFormat: 'jpg',
         maxZoom: 8
       },
@@ -70,8 +73,8 @@ const CELESTIAL_BODIES: CelestialBody[] = [
         resolution: '1km',
         category: 'Science Layers',
         dataSource: 'NASA GIBS',
-        baseUrl: 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best',
-        tileFormat: 'jpg',
+        baseUrl: 'https://gibs-a.earthdata.nasa.gov/wmts/epsg3857/best',
+        tileFormat: 'png',
         maxZoom: 8
       }
     ]
@@ -83,58 +86,56 @@ const CELESTIAL_BODIES: CelestialBody[] = [
     icon: '🌙',
     datasets: [
       {
-        id: 'LRO_WAC_Moon',
-        name: 'Lunar Reconnaissance Orbiter (WAC)',
-        description: 'Wide Angle Camera imagery of the Moon',
+        id: 'LRO_WAC_Mosaic_Global_303ppd',
+        name: 'LRO WAC Global Mosaic',
+        description: 'Lunar Reconnaissance Orbiter WAC global mosaic',
         resolution: '100m',
         category: 'Base Layers',
-        dataSource: 'NASA LRO',
-        baseUrl: 'https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Moon_Global_303ppd_v02/{z}/{x}/{y}.png',
-        tileFormat: 'png',
-        maxZoom: 8
-      },
-      {
-        id: 'LRO_LROC_Moon',
-        name: 'Lunar Reconnaissance Orbiter (LROC)',
-        description: 'Lunar Reconnaissance Orbiter Camera imagery',
-        resolution: '50m',
-        category: 'Base Layers',
-        dataSource: 'NASA LRO',
-        baseUrl: 'https://trek.nasa.gov/tiles/Moon/EQ/LRO_LROC_Moon_Global_303ppd_v02/{z}/{x}/{y}.png',
-        tileFormat: 'png',
-        maxZoom: 8
+        dataSource: 'NASA Trek',
+        // Adjusted for proper XYZ tile rendering: use {z}/{y}/{x} placeholders
+        baseUrl: 'https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/default/default028mm/{z}/{y}/{x}.jpg',
+        tileFormat: 'jpg',
+        maxZoom: 9,
+        type: 'xyz',
+        minLevel: 4
       }
     ]
   },
   {
     id: 'mars',
     name: 'Mars',
-    description: 'Mars Reconnaissance Orbiter and other Mars missions',
+    description: 'Mars Reconnaissance Orbiter, Viking, and other Mars missions',
     icon: '🔴',
     datasets: [
       {
-        id: 'MRO_Mars_Global',
-        name: 'Mars Global Survey',
-        description: 'Global view of Mars surface',
-        resolution: '500m',
-        category: 'Base Layers',
-        dataSource: 'NASA MRO',
-        baseUrl: 'https://trek.nasa.gov/tiles/Mars/EQ/MRO_Mars_Global_303ppd_v02/{z}/{x}/{y}.png',
-        tileFormat: 'png',
-        maxZoom: 8
-      },
-      {
-        id: 'MRO_Mars_Color',
-        name: 'Mars Color Imager',
-        description: 'Color imagery of Mars surface',
+        id: 'Mars_Viking_MDIM21_ClrMosaic_global_232m',
+        name: 'Viking VIS, Global Color Mosaic (232m)',
+        description: 'Global color mosaic of Mars (Viking MDIM2.1)',
         resolution: '250m',
         category: 'Base Layers',
-        dataSource: 'NASA MRO',
-        baseUrl: 'https://trek.nasa.gov/tiles/Mars/EQ/MRO_Mars_Color_303ppd_v02/{z}/{x}/{y}.png',
-        tileFormat: 'png',
-        maxZoom: 8
+        dataSource: 'NASA Trek',
+        baseUrl: 'https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/default/default028mm/{z}/{y}/{x}.jpg',
+        tileFormat: 'jpg',
+        maxZoom: 9,
+        type: 'xyz',
+        minLevel: 4
+      },
+      {
+        id: 'Mars_MGS_MOLA_ClrShade_merge_global_463m',
+        name: 'MGS MOLA Color Shaded Relief (463m)',
+        description: 'Color shaded relief map of Mars from MGS MOLA',
+        resolution: '463m',
+        category: 'Base Layers',
+        dataSource: 'NASA Trek',
+        // Adjusted for proper XYZ tile rendering: remove hardcoded tile path, use {z}/{y}/{x} placeholders
+        baseUrl: 'https://trek.nasa.gov/tiles/Mars/EQ/Mars_MGS_MOLA_ClrShade_merge_global_463m/1.0.0/default/default028mm/{z}/{y}/{x}.jpg',
+        tileFormat: 'jpg',
+        maxZoom: 15,
+        type: 'xyz',
+        minLevel: 0
       }
     ]
+  
   },
   {
     id: 'andromeda',
@@ -145,13 +146,26 @@ const CELESTIAL_BODIES: CelestialBody[] = [
       {
         id: 'Hubble_Andromeda',
         name: 'Hubble Andromeda Galaxy',
-        description: '2.5-gigapixel image of Andromeda galaxy',
-        resolution: 'Ultra High',
+        description: 'Hubble M31 mosaic (2025 release)',
+        resolution: '10552x2468',
         category: 'Deep Space',
         dataSource: 'NASA Hubble',
-        baseUrl: 'https://hubblesite.org/images/news/release/2015-02/{z}/{x}/{y}.jpg',
+        baseUrl: 'https://assets.science.nasa.gov/content/dam/science/missions/hubble/galaxies/andromeda/Hubble_M31Mosaic_2025_10552x2468_STScI-01JGY92V0Z2HJTVH605N4WH9XQ.jpg',
         tileFormat: 'jpg',
-        maxZoom: 10
+        maxZoom: 8,
+        type: 'image'
+      },
+      {
+        id: 'Hubble_Andromeda_Compass',
+        name: 'Hubble Andromeda Galaxy (Compass)',
+        description: 'Hubble M31 mosaic with compass overlay (7680x4320)',
+        resolution: '7680x4320',
+        category: 'Deep Space',
+        dataSource: 'NASA Hubble',
+        baseUrl: 'https://assets.science.nasa.gov/content/dam/science/missions/hubble/galaxies/andromeda/Hubble_M31Mosaic_Compass_7680x4320_STScI-01JGYCFA9BHKB7V0W7SKDKND29.jpg',
+        tileFormat: 'jpg',
+        maxZoom: 8,
+        type: 'image'
       }
     ]
   }
@@ -197,9 +211,10 @@ export class NASAImageService {
     // Different URL patterns for different data sources
     let url: string;
     if (layer.dataSource === 'NASA GIBS') {
-      url = `${layer.baseUrl}/${layerId}/default/${imageDate}/250m/{z}/{y}/{x}.${layer.tileFormat}`;
+      // GIBS WMTS (EPSG:3857 GoogleMapsCompatible) XYZ-style
+      url = `${layer.baseUrl}/${layerId}/default/${imageDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.${layer.tileFormat}`;
     } else {
-      // For static datasets like Moon, Mars, Andromeda
+      // For Moon/Mars XYZ or Andromeda DZI
       url = layer.baseUrl;
     }
     
@@ -213,33 +228,39 @@ export class NASAImageService {
   }
 
   static createTileSource(source: TileSource, layer: Layer) {
+    // Single static image
+    if (layer.type === 'image') {
+      return {
+        type: 'image',
+        url: source.url,
+        buildPyramid: true,
+        crossOriginPolicy: 'Anonymous'
+      } as any;
+    }
+
+    // DZI source
+    if (layer.type === 'dzi') {
+      return source.url;
+    }
+
+    // XYZ sources
     return {
       type: 'legacy-image-pyramid',
       getTileUrl: function(level: number, x: number, y: number) {
-        // For GIBS (Earth data), flip Y coordinate
-        if (layer.dataSource === 'NASA GIBS') {
-          const numTiles = Math.pow(2, level);
-          const flippedY = (numTiles - 1) - y;
-          return source.url
-            .replace('{z}', level.toString())
-            .replace('{y}', flippedY.toString())
-            .replace('{x}', x.toString());
-        } else {
-          // For other datasets, use standard tile coordinates
-          return source.url
-            .replace('{z}', level.toString())
-            .replace('{y}', y.toString())
-            .replace('{x}', x.toString());
+        const url = source.url.replace('{z}', level.toString());
+        if (layer.urlOrder === 'z-x-y') {
+          return url.replace('{x}', x.toString()).replace('{y}', y.toString());
         }
+        return url.replace('{y}', y.toString()).replace('{x}', x.toString());
       },
       width: Math.pow(2, layer.maxZoom) * 256,
       height: Math.pow(2, layer.maxZoom) * 256,
       tileWidth: 256,
       tileHeight: 256,
-      minLevel: 0,
+      minLevel: layer.minLevel ?? 0,
       maxLevel: layer.maxZoom,
       tileOverlap: 0,
-      wrapHorizontal: layer.dataSource === 'NASA GIBS', // Only Earth wraps
+      wrapHorizontal: layer.dataSource === 'NASA GIBS',
       wrapVertical: false,
       crossOriginPolicy: 'Anonymous'
     };

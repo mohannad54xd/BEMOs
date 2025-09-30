@@ -12,6 +12,18 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/wmts/, '/wmts')
+      },
+      '/trek': {
+        target: 'https://trek.nasa.gov',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/trek/, '')
+      },
+      '/astro': {
+        target: 'https://astro.arcgis.com',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/astro/, '')
       }
     }
   }

@@ -27,7 +27,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
       element: viewerRef.current,
       prefixUrl: 'https://cdn.jsdelivr.net/npm/openseadragon@3.1/build/openseadragon/images/',
       showNavigationControl: true,
-      defaultZoomLevel: 1,
+      defaultZoomLevel: 2,
       minZoomLevel: 0,
       maxZoomLevel: 8,
       visibilityRatio: 0.5,
@@ -46,15 +46,13 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         scrollToZoom: true,
         dragToPan: true
       },
-      loadTilesWithAjax: true,
+      // Use <img> tag loading to avoid CORS preflight; rely on CORS headers from servers
+      loadTilesWithAjax: false,
       crossOriginPolicy: 'Anonymous',
-      ajaxHeaders: {
-        'Access-Control-Allow-Origin': '*'
-      },
       maxImageCacheCount: 500,
       debugMode: false,
       placeholderFillStyle: '#000000',
-      wrapHorizontal: true,
+      wrapHorizontal: false,
       wrapVertical: false
     });
 
@@ -80,8 +78,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
       setError(null);
       
       try {
-        const tileSource = NASAImageService.getTileSource(bodyId, layerId, date);
-        const layer = NASAImageService.getLayer(bodyId, layerId);
+        let tileSource = NASAImageService.getTileSource(bodyId, layerId, date);
+        let layer = NASAImageService.getLayer(bodyId, layerId);
         
         if (!layer) {
           setError('Layer not found');
@@ -89,6 +87,27 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
           return;
         }
         
+        // Pre-validate tile availability for Earth to avoid 400s
+        if (layer.dataSource === 'NASA GIBS') {
+          const isValid = await NASAImageService.validateTileSource(tileSource);
+          if (!isValid) {
+            // try yesterday
+            const prevDate = new Date(date);
+            prevDate.setDate(prevDate.getDate() - 1);
+            tileSource = NASAImageService.getTileSource(bodyId, layerId, prevDate);
+            const prevValid = await NASAImageService.validateTileSource(tileSource);
+            if (!prevValid) {
+              // fallback to VIIRS True Color
+              const fallbackLayerId = 'VIIRS_SNPP_CorrectedReflectance_TrueColor';
+              const fbLayer = NASAImageService.getLayer(bodyId, fallbackLayerId);
+              if (fbLayer) {
+                layer = fbLayer;
+                tileSource = NASAImageService.getTileSource(bodyId, fallbackLayerId, prevDate);
+              }
+            }
+          }
+        }
+
         // Remove existing items and force cleanup
         viewerInstance.current?.world.removeAll();
         viewerInstance.current?.forceRedraw();
@@ -116,6 +135,30 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             error: (error: any) => {
               console.log(`Attempt ${attempt + 1} failed, retrying...`, error);
               console.log('Tile source URL:', tileSource.url);
+              // If GIBS Earth layer fails, try previous date automatically
+              if (layer.dataSource === 'NASA GIBS') {
+                const prevDate = new Date(date);
+                prevDate.setDate(prevDate.getDate() - 1);
+                try {
+                  const prevSource = NASAImageService.getTileSource(bodyId, layerId, prevDate);
+                  const prevConfig = NASAImageService.createTileSource(prevSource, layer);
+                  viewerInstance.current?.world.removeAll();
+                  viewerInstance.current?.addTiledImage({ tileSource: prevConfig, success: () => setIsLoading(false) });
+                  return;
+                } catch {}
+              }
+              // If NASA Trek fails (Moon/Mars), attempt png/jpg swap once
+              if (layer.dataSource === 'NASA Trek') {
+                const isJpg = tileSource.url.endsWith('.jpg');
+                const altUrl = isJpg ? tileSource.url.replace('.jpg', '.png') : tileSource.url.replace('.png', '.jpg');
+                const altSource = { ...tileSource, url: altUrl } as any;
+                try {
+                  const altConfig = NASAImageService.createTileSource(altSource, layer);
+                  viewerInstance.current?.world.removeAll();
+                  viewerInstance.current?.addTiledImage({ tileSource: altConfig, success: () => setIsLoading(false) });
+                  return;
+                } catch {}
+              }
               setTimeout(() => retryImage(attempt + 1), 2000 * (attempt + 1));
             }
           });
