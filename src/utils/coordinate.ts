@@ -37,7 +37,8 @@ export function latLonToTrekTileXY(lat: number, lon: number, zoom: number) {
 }
 
 // Convert pixel coords (for a given layer width/height) to OpenSeadragon viewport image coordinates (0..width, 0..height)
-export function pixelsToImageCoordinates(px: number, py: number, imageWidth: number, imageHeight: number) {
+export function pixelsToImageCoordinates(px: number, py: number, _imageWidth: number, _imageHeight: number) {
   // OpenSeadragon expects image coordinates in pixels
+  // imageWidth/imageHeight are intentionally unused in the simple passthrough
   return { x: px, y: py };
 }
