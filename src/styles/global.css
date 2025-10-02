@@ -7,12 +7,27 @@
   --space-purple: #4A148C;
 }
 
-body {
+html, body, #root {
+  height: 100%;
+  /* subtle diagonal space gradient with solid fallback */
   background-color: var(--space-black);
+  background-image: linear-gradient(135deg, rgba(26,35,126,0.12) 0%, rgba(74,20,140,0.08) 40%, rgba(11,11,13,0.98) 100%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center center;
+}
+
+body {
   color: white;
   min-height: 100vh;
   font-family: system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Ensure very tall pages still show the gradient */
+main, #root, .min-h-screen {
+  min-height: 100vh;
 }
 
 .btn-primary {

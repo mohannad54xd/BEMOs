@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 
 export const HomePage = () => {
   return (
-    <div className="min-h-screen">
+  <div className="min-h-screen text-white">
       {/* Hero Section */}
-      <section className="h-screen relative flex items-center justify-center overflow-hidden">
+      <section className="min-h-[72vh] md:h-screen relative flex items-center justify-center overflow-hidden">
         {/* Animated starfield background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-purple-900/10 to-black" />
@@ -35,7 +35,7 @@ export const HomePage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-extrabold mb-4 sm:mb-6 leading-tight bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 bg-clip-text text-transparent"
           >
             Explore the Universe
           </motion.h1>
@@ -43,7 +43,7 @@ export const HomePage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-xl md:text-2xl mb-8 text-gray-300 max-w-2xl mx-auto"
+            className="text-base md:text-xl mb-6 md:mb-8 text-gray-300 max-w-2xl mx-auto"
           >
             Discover NASA's massive datasets through an interactive, zoomable experience
           </motion.p>
@@ -55,13 +55,13 @@ export const HomePage = () => {
           >
             <Link 
               to="/explore" 
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-xl"
             >
               🚀 Start Exploring
             </Link>
             <Link 
               to="/about" 
-              className="border-2 border-white/30 hover:border-white/60 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:bg-white/10"
+              className="border-2 border-white/20 hover:border-white/50 text-white px-6 py-3 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 hover:bg-white/8 backdrop-blur-sm"
             >
               Learn More
             </Link>
@@ -78,7 +78,7 @@ export const HomePage = () => {
           <motion.div
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center"
+            className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center bg-white/3"
           >
             <motion.div
               animate={{ y: [0, 12, 0] }}
@@ -90,18 +90,17 @@ export const HomePage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-gradient-to-b from-black to-gray-900">
+      <section className="py-16 md:py-20 bg-gradient-to-b from-black to-gray-900">
         <div className="container mx-auto px-4">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-4xl md:text-5xl font-bold mb-16 text-center bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-12 text-center bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
           >
             Powerful Features
           </motion.h2>
-          
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
             {[
               {
                 icon: "🔍",
@@ -121,14 +120,14 @@ export const HomePage = () => {
             ].map((feature, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
-                className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300"
+                transition={{ duration: 0.6, delay: index * 0.15 }}
+                className="bg-gradient-to-br from-gray-900/60 to-black/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-800/40 hover:border-blue-500/30 transition-all duration-300 hover:scale-[1.02]"
               >
-                <div className="text-4xl mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-3 text-white">{feature.title}</h3>
-                <p className="text-gray-300">{feature.description}</p>
+                <div className="text-4xl mb-4 bg-white/5 inline-flex items-center justify-center w-12 h-12 rounded-lg">{feature.icon}</div>
+                <h3 className="text-lg md:text-xl font-semibold mb-2 text-white">{feature.title}</h3>
+                <p className="text-gray-300 text-sm md:text-base">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -136,7 +135,7 @@ export const HomePage = () => {
       </section>
 
       {/* About Section */}
-      <section className="py-20 bg-black">
+      <section className="py-16 md:py-20 bg-black">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -197,13 +196,13 @@ export const HomePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-900/20 to-purple-900/20">
+      <section className="py-12 md:py-16 bg-gradient-to-r from-blue-900/10 to-purple-900/10">
         <div className="container mx-auto px-4 text-center">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-4xl md:text-5xl font-bold mb-6 text-white"
+            className="text-3xl md:text-4xl font-bold mb-6 text-white"
           >
             Ready to Explore?
           </motion.h2>
@@ -222,7 +221,7 @@ export const HomePage = () => {
           >
             <Link 
               to="/explore" 
-              className="inline-flex items-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              className="inline-flex items-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-full text-base md:text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               🚀 Launch Explorer
             </Link>

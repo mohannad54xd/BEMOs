@@ -9,6 +9,9 @@ export default {
       colors: {
         primary: '#00FF95',
         secondary: '#FF6B00',
+        'space-black': '#0B0B0D',
+        'space-blue': '#1A237E',
+        'space-purple': '#4A148C',
       },
       animation: {
         blob: "blob 7s infinite",

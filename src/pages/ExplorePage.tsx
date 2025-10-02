@@ -7,8 +7,11 @@ import { CoordinateSearch } from '../components/CoordinateSearch';
 import { testNASAIntegration } from '../utils/testNASAIntegration';
 import type { Layer } from '../services/NASAImageService';
 import type { Annotation } from '../types/annotation';
-import type OpenSeadragon from 'openseadragon';
+// OpenSeadragon is used at runtime
 import { ImageViewer } from '../components/ImageViewer';
+import { NASAImageService as Service } from '../services/NASAImageService';
+import { latLonToWebMercatorPixels, latLonToTrekTileXY } from '../utils/coordinate';
+import OpenSeadragon from 'openseadragon';
 
 export const ExplorePage = () => {
   const [selectedBody, setSelectedBody] = useState('earth');
@@ -70,20 +73,65 @@ export const ExplorePage = () => {
   const handleCoordinateSearch = (lat: number, lng: number) => {
     if (viewerRef.current) {
       // Convert lat/lng to viewer coordinates and pan to location
-      // This is a simplified implementation - in a real app, you'd convert lat/lng to image coordinates
       console.log(`Searching for coordinates: ${lat}, ${lng}`);
-      // TODO: Implement proper coordinate conversion and navigation
+      const layer = selectedLayerInfo;
+      if (!layer) return;
+
+      try {
+        // For WebMercator (NASA GIBS) layers we map to pixels at an appropriate zoom level
+        if (layer.dataSource === 'NASA GIBS') {
+          const zoom = Math.min(layer.maxZoom ?? 8, 8);
+          const px = latLonToWebMercatorPixels(lat, lng, zoom);
+          // Convert to image coordinates expected by OpenSeadragon: center point in image pixels
+          // The viewer's viewport coordinates are fractional; use viewport.imageToViewportCoordinates when available
+          const imagePoint = viewerRef.current.viewport.imageToViewportCoordinates(new OpenSeadragon.Point(px.x, px.y));
+          viewerRef.current.viewport.panTo(imagePoint);
+          viewerRef.current.viewport.applyConstraints();
+          return;
+        }
+
+        // For Trek/Moon/Mars XYZ tiles (EQ projection), map to tile XY and pan to approximate pixel center
+        if (layer.dataSource === 'NASA Trek' || layer.type === 'xyz') {
+          const zoom = Math.min(layer.maxZoom ?? 8, 8);
+          const tile = latLonToTrekTileXY(lat, lng, zoom);
+          const px = (tile.x + 0.5) * 256;
+          const py = (tile.y + 0.5) * 256;
+          const imagePoint = viewerRef.current.viewport.imageToViewportCoordinates(new OpenSeadragon.Point(px, py));
+          viewerRef.current.viewport.panTo(imagePoint);
+          viewerRef.current.viewport.applyConstraints();
+          return;
+        }
+
+        // For plain image layers, pan to center
+        viewerRef.current.viewport.panTo(new OpenSeadragon.Point(0.5, 0.5));
+        viewerRef.current.viewport.applyConstraints();
+      } catch (err) {
+        console.warn('Coordinate search failed:', err);
+      }
     }
   };
 
   const handleFeatureSearch = (feature: string) => {
     console.log(`Searching for feature: ${feature}`);
-    // In a real implementation, this would search through NASA's feature databases
-    // and navigate to known locations
+    // Very small local lookup table for demo purposes
+    const lookup: Record<string, { lat: number; lng: number }> = {
+      'Hurricane': { lat: 25.0, lng: -70.0 },
+      'Volcano': { lat: -16.25, lng: -71.5 },
+      'Deforestation': { lat: -3.4653, lng: -62.2159 },
+      'Ice Sheet': { lat: 82.5, lng: -62.0 },
+      'Ocean Current': { lat: 30.0, lng: -40.0 },
+      'Olympus Mons': { lat: 18.65, lng: 226.2 }
+    };
+
+    const s = lookup[feature];
+    if (s && viewerRef.current) {
+      // reuse coordinate search pan
+      handleCoordinateSearch(s.lat, s.lng);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-black">
+  <div className="min-h-screen">
       <div className="container mx-auto px-4 py-4">
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-4">
@@ -124,6 +172,21 @@ export const ExplorePage = () => {
                   </option>
                 ))}
               </select>
+            )}
+
+            {/* Import Trek Layers button for Moon/Mars */}
+            {(selectedBody === 'moon' || selectedBody === 'mars') && (
+              <button
+                onClick={async () => {
+                  const imported = await Service.discoverTrekLayers(selectedBody);
+                  Service.addLayersToBody(selectedBody, imported as any);
+                  // Force UI to see new layers by updating state
+                  setSelectedLayer(prev => prev || (imported[0]?.id ?? ''));
+                }}
+                className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm"
+              >
+                Import Trek Layers
+              </button>
             )}
             
             <div className="text-xs sm:text-sm text-gray-400 w-full sm:w-auto">

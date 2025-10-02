@@ -27,9 +27,9 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
       element: viewerRef.current,
       prefixUrl: 'https://cdn.jsdelivr.net/npm/openseadragon@3.1/build/openseadragon/images/',
       showNavigationControl: true,
-      defaultZoomLevel: 2,
-      minZoomLevel: 0,
-      maxZoomLevel: 8,
+  defaultZoomLevel: 2,
+  minZoomLevel: 0,
+  maxZoomLevel: 12,
       visibilityRatio: 0.5,
       constrainDuringPan: true,
       showNavigator: true,
@@ -49,7 +49,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
       // Use <img> tag loading to avoid CORS preflight; rely on CORS headers from servers
       loadTilesWithAjax: false,
       crossOriginPolicy: 'Anonymous',
-      maxImageCacheCount: 500,
+  maxImageCacheCount: 1000,
       debugMode: false,
       placeholderFillStyle: '#000000',
       wrapHorizontal: false,
@@ -78,7 +78,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
       setError(null);
       
       try {
-        let tileSource = NASAImageService.getTileSource(bodyId, layerId, date);
+  let tileSource = NASAImageService.getTileSource(bodyId, layerId, date);
         let layer = NASAImageService.getLayer(bodyId, layerId);
         
         if (!layer) {
@@ -87,26 +87,80 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
           return;
         }
         
-        // Pre-validate tile availability for Earth to avoid 400s
+        // For NASA GIBS, attempt to find a valid TileMatrixSet (avoids wrong Level mismatch)
         if (layer.dataSource === 'NASA GIBS') {
-          const isValid = await NASAImageService.validateTileSource(tileSource);
-          if (!isValid) {
-            // try yesterday
-            const prevDate = new Date(date);
-            prevDate.setDate(prevDate.getDate() - 1);
-            tileSource = NASAImageService.getTileSource(bodyId, layerId, prevDate);
-            const prevValid = await NASAImageService.validateTileSource(tileSource);
-            if (!prevValid) {
-              // fallback to VIIRS True Color
-              const fallbackLayerId = 'VIIRS_SNPP_CorrectedReflectance_TrueColor';
-              const fbLayer = NASAImageService.getLayer(bodyId, fallbackLayerId);
-              if (fbLayer) {
-                layer = fbLayer;
-                tileSource = NASAImageService.getTileSource(bodyId, fallbackLayerId, prevDate);
+          try {
+            tileSource = await NASAImageService.findValidGibsTileSource(bodyId, layerId, date);
+          } catch (err) {
+            // fallback previous behavior
+            const isValid = await NASAImageService.validateTileSource(tileSource);
+            if (!isValid) {
+              const prevDate = new Date(date);
+              prevDate.setDate(prevDate.getDate() - 1);
+              tileSource = NASAImageService.getTileSource(bodyId, layerId, prevDate);
+              const prevValid = await NASAImageService.validateTileSource(tileSource);
+              if (!prevValid) {
+                const fallbackLayerId = 'VIIRS_SNPP_CorrectedReflectance_TrueColor';
+                const fbLayer = NASAImageService.getLayer(bodyId, fallbackLayerId);
+                if (fbLayer) {
+                  layer = fbLayer;
+                  tileSource = NASAImageService.getTileSource(bodyId, fallbackLayerId, prevDate);
+                }
               }
             }
           }
         }
+
+        // Before adding tiles, probe a few sample tile images to detect "empty" (all-black/transparent) tiles
+        const isTileMostlyEmpty = async (tileUrl: string) => {
+          try {
+            const res = await fetch(tileUrl, { mode: 'cors', cache: 'no-cache' });
+            if (!res.ok) return false;
+            const blob = await res.blob();
+            // createImageBitmap will obey CORS; if server doesn't allow, this will throw and we can't inspect
+            const bitmap = await createImageBitmap(blob);
+            const canvas = document.createElement('canvas');
+            const w = 64, h = 64;
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return false;
+            ctx.drawImage(bitmap, 0, 0, w, h);
+            const data = ctx.getImageData(0, 0, w, h).data;
+            let total = 0;
+            for (let i = 0; i < data.length; i += 4) {
+              // use luminance
+              const r = data[i], g = data[i+1], b = data[i+2];
+              const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+              total += lum;
+            }
+            const avg = total / (data.length / 4);
+            // if average luminance is very low, treat as mostly empty (black)
+            return avg < 8;
+          } catch (err) {
+            return false;
+          }
+        };
+
+        // Build sample tile URLs for a low zoom to check mosaic completeness
+        const buildSampleUrls = (ts: any) => {
+          const maxZ = layer?.maxZoom ?? 8;
+          const sampleLevel = Math.max(2, maxZ - 2);
+          const coords = [0,1,2,3];
+          const urls: string[] = [];
+          for (const x of coords) for (const y of coords) {
+            const raw = String(ts.url).replace('{z}', sampleLevel.toString()).replace('{x}', x.toString()).replace('{y}', y.toString());
+            // route through local tile proxy: expect domain/path like 'gibs-a.earthdata.nasa.gov/wmts/...'
+            try {
+              const u = new URL(raw);
+              const proxied = `/api/tiles/${u.host}${u.pathname}${u.search}`;
+              urls.push(proxied);
+            } catch (e) {
+              // fallback to raw
+              urls.push(raw);
+            }
+          }
+          return urls.slice(0, 6); // probe first 6
+        };
 
         // Remove existing items and force cleanup
         viewerInstance.current?.world.removeAll();
@@ -114,16 +168,53 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         
         // Wait for cleanup
         await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Probe content: if many sampled tiles are empty, try fallback options first
+        try {
+          const sampleUrls = buildSampleUrls(tileSource);
+          let emptyCount = 0;
+          const checks = await Promise.all(sampleUrls.map(u => isTileMostlyEmpty(u)));
+          for (const c of checks) if (c) emptyCount++;
+          const emptyFraction = checks.length > 0 ? emptyCount / checks.length : 0;
+          if (emptyFraction > 0.5) {
+            console.log('Detected many empty tiles; requesting server-side mosaic as fallback');
+            // Build template URL from tileSource (replace domain path to absolute)
+            try {
+              const template = tileSource.url;
+              // determine a center z/x/y for mosaic probe
+              const maxZ = layer?.maxZoom ?? 8;
+              const z = Math.max(2, maxZ - 2);
+              const x = 1; const y = 1; // sample center for mosaic
+              const mosaicResp = await fetch('/api/mosaic', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ templateUrl: template, z, x, y })
+              });
+              if (mosaicResp.ok) {
+                const blob = await mosaicResp.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                // use the mosaic image as a temporary single-image tile source
+                tileSource = { ...tileSource, url: objectUrl } as any;
+                layer = { ...layer, type: 'image' } as any;
+                console.log('Using server-side mosaic image');
+              }
+            } catch (err) {
+              console.warn('Mosaic request failed, continuing with other fallbacks', err);
+            }
+          }
+        } catch (err) {
+          console.warn('Tile sampling failed, continuing to load normally', err);
+        }
         
         const retryImage = (attempt = 0, maxAttempts = 3) => {
           if (attempt >= maxAttempts) {
             console.error('Failed to load image after multiple attempts');
-            setError(`Failed to load ${layer.dataSource} imagery. Please try a different dataset.`);
+            setError(`Failed to load ${layer?.dataSource ?? 'imagery'} imagery. Please try a different dataset.`);
             setIsLoading(false);
             return;
           }
 
-          const tileSourceConfig = NASAImageService.createTileSource(tileSource, layer);
+          const tileSourceConfig = NASAImageService.createTileSource(tileSource, layer!);
           
           viewerInstance.current?.addTiledImage({
             tileSource: tileSourceConfig,
@@ -136,24 +227,24 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
               console.log(`Attempt ${attempt + 1} failed, retrying...`, error);
               console.log('Tile source URL:', tileSource.url);
               // If GIBS Earth layer fails, try previous date automatically
-              if (layer.dataSource === 'NASA GIBS') {
+              if (layer?.dataSource === 'NASA GIBS') {
                 const prevDate = new Date(date);
                 prevDate.setDate(prevDate.getDate() - 1);
                 try {
                   const prevSource = NASAImageService.getTileSource(bodyId, layerId, prevDate);
-                  const prevConfig = NASAImageService.createTileSource(prevSource, layer);
+                  const prevConfig = NASAImageService.createTileSource(prevSource, layer!);
                   viewerInstance.current?.world.removeAll();
                   viewerInstance.current?.addTiledImage({ tileSource: prevConfig, success: () => setIsLoading(false) });
                   return;
                 } catch {}
               }
               // If NASA Trek fails (Moon/Mars), attempt png/jpg swap once
-              if (layer.dataSource === 'NASA Trek') {
+              if (layer?.dataSource === 'NASA Trek') {
                 const isJpg = tileSource.url.endsWith('.jpg');
                 const altUrl = isJpg ? tileSource.url.replace('.jpg', '.png') : tileSource.url.replace('.png', '.jpg');
                 const altSource = { ...tileSource, url: altUrl } as any;
                 try {
-                  const altConfig = NASAImageService.createTileSource(altSource, layer);
+                  const altConfig = NASAImageService.createTileSource(altSource, layer!);
                   viewerInstance.current?.world.removeAll();
                   viewerInstance.current?.addTiledImage({ tileSource: altConfig, success: () => setIsLoading(false) });
                   return;
@@ -179,7 +270,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
     <div className="relative w-full h-full">
       <div 
         ref={viewerRef} 
-        className="w-full h-full bg-black"
+        className="w-full h-full"
         style={{ minHeight: '400px' }}
       />
       {isLoading && (

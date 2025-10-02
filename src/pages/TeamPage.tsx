@@ -37,7 +37,7 @@ export const TeamPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-black">
+  <div className="min-h-screen">
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-b from-blue-900/20 to-black">
         <div className="container mx-auto px-4">

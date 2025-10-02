@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import OpenSeadragon from 'openseadragon';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Annotation } from '../types/annotation';
 
@@ -35,13 +36,17 @@ export const AnnotationOverlay: React.FC<AnnotationOverlayProps> = ({
     
     const containerRect = overlayRef.current.getBoundingClientRect();
     const viewport = viewer.viewport;
-    const imagePoint = viewport.viewportToImageCoordinates(viewerPoint);
-    const screenPoint = viewport.imageToViewportCoordinates(imagePoint);
-    
-    return {
-      x: (screenPoint.x * containerRect.width),
-      y: (screenPoint.y * containerRect.height)
-    };
+    // viewerPoint is stored as image coordinates (pixels). Convert to viewport coords then to screen pixels.
+    try {
+      const viewportPoint = viewport.imageToViewportCoordinates(new OpenSeadragon.Point(viewerPoint.x, viewerPoint.y));
+      return {
+        x: (viewportPoint.x * containerRect.width),
+        y: (viewportPoint.y * containerRect.height)
+      };
+    } catch (err) {
+      // fallback: try raw multiplication if methods aren't available
+      return { x: viewerPoint.x, y: viewerPoint.y } as any;
+    }
   };
 
   // Convert screen coordinates to viewer coordinates
@@ -131,20 +136,26 @@ export const AnnotationOverlay: React.FC<AnnotationOverlayProps> = ({
       {/* Render existing annotations */}
       <AnimatePresence>
         {annotations.map((annotation) => {
-          const screenPos = viewerToScreen({ x: annotation.x, y: annotation.y });
-          
-          return (
-            <motion.div
-              key={annotation.id}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0 }}
-              className="absolute pointer-events-auto"
-              style={{
-                left: screenPos.x - 10,
-                top: screenPos.y - 10,
-              }}
-            >
+            const screenPos = viewerToScreen({ x: annotation.x, y: annotation.y });
+            // guard against invalid coordinates which can produce NaN CSS values
+            if (!Number.isFinite(screenPos.x) || !Number.isFinite(screenPos.y)) {
+              // optional: log once for debugging
+              // console.debug('Skipping annotation render due to invalid screen coordinates', annotation.id, screenPos);
+              return null;
+            }
+
+            return (
+              <motion.div
+                key={annotation.id}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                className="absolute pointer-events-auto"
+                style={{
+                  left: screenPos.x - 10,
+                  top: screenPos.y - 10,
+                }}
+              >
               <div
                 className={`w-5 h-5 rounded-full border-2 cursor-pointer transition-all duration-200 ${
                   selectedAnnotation === annotation.id
