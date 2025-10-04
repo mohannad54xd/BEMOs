@@ -4,6 +4,7 @@ import { HomePage } from './pages/HomePage'
 import { ExplorePage } from './pages/ExplorePage'
 import { AboutPage } from './pages/AboutPage'
 import { TeamPage } from './pages/TeamPage'
+import PlanetsPage from './pages/PlanetsPage'
 
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/team" element={<TeamPage />} />
+          <Route path="/planets" element={<PlanetsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

@@ -47,6 +47,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 { to: '/explore', label: 'Explore' },
                 { to: '/about', label: 'About' },
                 { to: '/team', label: 'Team' },
+                { to: '/planets', label: 'Planets' },
               ].map((item) => (
                 <NavLink
                   key={item.to}
@@ -102,6 +103,7 @@ export const Layout = ({ children }: LayoutProps) => {
                     { to: '/explore', label: 'Explore' },
                     { to: '/about', label: 'About' },
                     { to: '/team', label: 'Team' },
+                    { to: '/planets', label: 'Planets' },
                   ].map((item) => (
                     <NavLink
                       key={item.to}
