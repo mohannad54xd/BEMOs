@@ -1,39 +1,70 @@
 import { motion } from 'framer-motion';
 
 export const TeamPage = () => {
+  /**
+   * An array of team member profiles, each representing a contributor to the project.
+   *
+   * @typeParam name - The full name of the team member.
+   * @typeParam role - The primary role(s) and responsibilities of the team member within the project.
+   * @typeParam bio - A brief biography describing the member's background and contributions.
+   * @typeParam skills - A list of key skills and technologies associated with the team member.
+   * @typeParam github - The URL to the team member's GitHub profile.
+   * @typeParam linkedin - The URL to the team member's LinkedIn profile.
+   * @typeParam photo - (Optional) The URL to the team member's profile photo. If not provided, initials will be shown.
+   */
   const teamMembers = [
     {
-      name: 'Alex Johnson',
+      name: 'Mohannad Essam',
       role: 'Project Lead & Full Stack Developer',
       bio: 'Passionate about space exploration and data visualization. Led the development of the interactive viewer and NASA data integration.',
       skills: ['React', 'TypeScript', 'OpenSeadragon', 'NASA APIs'],
-      github: 'https://github.com/alexjohnson',
-      linkedin: 'https://linkedin.com/in/alexjohnson'
+      github: 'https://github.com/mohannad54xd',
+      linkedin: 'https://linkedin.com/in/mohannad-essam-092aa02b9'
+      ,
+      photo: '/src/assets/team/mohannad.jpg'
     },
     {
-      name: 'Sarah Chen',
+      name: 'Mohannad Abd elnaby',
       role: 'UI/UX Designer & Frontend Developer',
       bio: 'Specializes in creating intuitive user experiences for complex data visualization. Designed the responsive interface and animations.',
       skills: ['Framer Motion', 'Tailwind CSS', 'User Research', 'Prototyping'],
-      github: 'https://github.com/sarahchen',
-      linkedin: 'https://linkedin.com/in/sarahchen'
+      github: 'https://github.com/Mands-s',
+      linkedin: 'https://www.linkedin.com/in/mohanad-abdelnaby-74130a2b3/'
+      ,
+      photo: '/src/assets/team/mands.jpg'
     },
     {
-      name: 'Marcus Rodriguez',
+      name: 'Yehia Ahmed',
       role: 'Data Scientist & Backend Developer',
       bio: 'Expert in NASA data formats and geospatial analysis. Implemented the temporal data processing and layer management systems.',
       skills: ['Python', 'Geospatial Analysis', 'NASA GIBS', 'Data Processing'],
       github: 'https://github.com/marcusrodriguez',
       linkedin: 'https://linkedin.com/in/marcusrodriguez'
+      ,
+      photo: '/src/assets/team/yehia.jpg'
     },
     {
-      name: 'Dr. Emily Watson',
+      name: 'Lauran Fayed',
       role: 'Scientific Advisor & Domain Expert',
       bio: 'Astrophysicist with expertise in space mission data. Provides scientific guidance and ensures data accuracy and interpretation.',
       skills: ['Astrophysics', 'Space Missions', 'Data Analysis', 'Scientific Communication'],
       github: 'https://github.com/emilywatson',
       linkedin: 'https://linkedin.com/in/emilywatson'
+      ,
+      photo: '/src/assets/team/lauran.jpg'
+    },
+
+    {
+      name: 'Eman El Sayed',
+      role: 'Frontend Engineer & Accessibility Lead',
+      bio: 'Designs inclusive interfaces and implements accessibility-first components. Focuses on responsive layouts and keyboard navigation.',
+      skills: ['Accessibility', 'React', 'Tailwind CSS', 'Inclusive Design'],
+      github: 'https://github.com/aishakhan',
+      linkedin: 'https://www.linkedin.com/in/aisha-khan-ux/',
+      photo: '/src/assets/team/eman.jpg'
     }
+
+    
   ];
 
   return (
@@ -72,9 +103,17 @@ export const TeamPage = () => {
               >
                 <div className="flex flex-col md:flex-row gap-6">
                   <div className="flex-shrink-0">
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-2xl font-bold text-white">
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </div>
+                    {member.photo ? (
+                      <img
+                        src={member.photo}
+                        alt={member.name}
+                        className="w-24 h-24 rounded-full object-cover border-2 border-gray-700"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-2xl font-bold text-white">
+                        {member.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex-1">

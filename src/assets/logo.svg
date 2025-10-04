@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#2563eb" />
+      <stop offset="1" stop-color="#7c3aed" />
+    </linearGradient>
+  </defs>
+  <rect width="48" height="48" rx="8" fill="url(#g)" />
+  <circle cx="24" cy="17" r="6" fill="white" fill-opacity="0.12" />
+  <text x="24" y="33" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="white" text-anchor="middle">NASA</text>
+</svg>

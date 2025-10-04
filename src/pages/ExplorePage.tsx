@@ -10,7 +10,8 @@ import type { Annotation } from '../types/annotation';
 // OpenSeadragon is used at runtime
 import { ImageViewer } from '../components/ImageViewer';
 import { NASAImageService as Service } from '../services/NASAImageService';
-import { latLonToWebMercatorPixels, latLonToTrekTileXY } from '../utils/coordinate';
+import { latLonToWebMercatorPixels, latLonToTrekTileXY, latLonToImagePixels, imagePixelsToViewportPoint } from '../utils/coordinate';
+import gazetteer from '../data/gazetteer.json';
 import OpenSeadragon from 'openseadragon';
 
 export const ExplorePage = () => {
@@ -21,6 +22,7 @@ export const ExplorePage = () => {
   const [isAnnotationMode, setIsAnnotationMode] = useState(false);
   const [testResults, setTestResults] = useState<any>(null);
   const viewerRef = useRef<OpenSeadragon.Viewer | null>(null);
+  const [marker, setMarker] = useState<{ x: number; y: number; visible: boolean }>({ x: 0, y: 0, visible: false });
   
   const celestialBodies = NASAImageService.celestialBodies;
   const currentBody = NASAImageService.getCelestialBody(selectedBody);
@@ -78,21 +80,36 @@ export const ExplorePage = () => {
       if (!layer) return;
 
       try {
-        // For WebMercator (NASA GIBS) layers we map to pixels at an appropriate zoom level
+        // Try to compute a viewport point using explicit image pixel math when tileSource metadata is available
+        const tileSource = NASAImageService.getTileSource(selectedBody, layer.id, selectedDate);
+        const imageW = tileSource.width ?? Math.pow(2, layer.maxZoom ?? 8) * 256;
+        const imageH = tileSource.height ?? Math.pow(2, layer.maxZoom ?? 8) * 256;
+        const zoom = Math.min(layer.maxZoom ?? 8, 8);
+
+        // Choose projection from layer metadata if available
+        const proj = (layer as any).projection ?? (layer.dataSource === 'NASA GIBS' ? 'webmercator' : (layer.type === 'image' ? 'image' : 'trek'));
+        const imgPt = latLonToImagePixels(lat, lng, zoom, imageW, imageH, proj);
+        const vp = imagePixelsToViewportPoint(viewerRef.current, imgPt.x, imgPt.y);
+        if (vp) {
+          viewerRef.current.viewport.panTo(vp);
+          viewerRef.current.viewport.applyConstraints();
+          // show transient marker at the image pixel we panned to
+          setMarker({ x: imgPt.x, y: imgPt.y, visible: true });
+          // hide after 4s
+          setTimeout(() => setMarker(m => ({ ...m, visible: false })), 4000);
+          return;
+        }
+
+        // Fallback heuristics
         if (layer.dataSource === 'NASA GIBS') {
-          const zoom = Math.min(layer.maxZoom ?? 8, 8);
           const px = latLonToWebMercatorPixels(lat, lng, zoom);
-          // Convert to image coordinates expected by OpenSeadragon: center point in image pixels
-          // The viewer's viewport coordinates are fractional; use viewport.imageToViewportCoordinates when available
           const imagePoint = viewerRef.current.viewport.imageToViewportCoordinates(new OpenSeadragon.Point(px.x, px.y));
           viewerRef.current.viewport.panTo(imagePoint);
           viewerRef.current.viewport.applyConstraints();
           return;
         }
 
-        // For Trek/Moon/Mars XYZ tiles (EQ projection), map to tile XY and pan to approximate pixel center
         if (layer.dataSource === 'NASA Trek' || layer.type === 'xyz') {
-          const zoom = Math.min(layer.maxZoom ?? 8, 8);
           const tile = latLonToTrekTileXY(lat, lng, zoom);
           const px = (tile.x + 0.5) * 256;
           const py = (tile.y + 0.5) * 256;
@@ -102,9 +119,11 @@ export const ExplorePage = () => {
           return;
         }
 
-        // For plain image layers, pan to center
+        // Default: pan to center of image
         viewerRef.current.viewport.panTo(new OpenSeadragon.Point(0.5, 0.5));
         viewerRef.current.viewport.applyConstraints();
+        setMarker({ x: (imageW / 2), y: (imageH / 2), visible: true });
+        setTimeout(() => setMarker(m => ({ ...m, visible: false })), 4000);
       } catch (err) {
         console.warn('Coordinate search failed:', err);
       }
@@ -113,19 +132,10 @@ export const ExplorePage = () => {
 
   const handleFeatureSearch = (feature: string) => {
     console.log(`Searching for feature: ${feature}`);
-    // Very small local lookup table for demo purposes
-    const lookup: Record<string, { lat: number; lng: number }> = {
-      'Hurricane': { lat: 25.0, lng: -70.0 },
-      'Volcano': { lat: -16.25, lng: -71.5 },
-      'Deforestation': { lat: -3.4653, lng: -62.2159 },
-      'Ice Sheet': { lat: 82.5, lng: -62.0 },
-      'Ocean Current': { lat: 30.0, lng: -40.0 },
-      'Olympus Mons': { lat: 18.65, lng: 226.2 }
-    };
-
-    const s = lookup[feature];
+    const bodyLookup = (gazetteer as any)[selectedBody] || {};
+    const s = bodyLookup[feature];
     if (s && viewerRef.current) {
-      // reuse coordinate search pan
+      // prefer pan via image pixel math when possible
       handleCoordinateSearch(s.lat, s.lng);
     }
   };
@@ -210,6 +220,25 @@ export const ExplorePage = () => {
                 viewerRef.current = viewer;
               }}
             />
+          )}
+          {/* Transient search marker */}
+          {marker.visible && viewerRef.current && (
+            (() => {
+              try {
+                const vpPt = viewerRef.current.viewport.imageToViewportCoordinates(new OpenSeadragon.Point(marker.x, marker.y));
+                const container = viewerRef.current.container;
+                const rect = container.getBoundingClientRect();
+                const left = vpPt.x * rect.width;
+                const top = vpPt.y * rect.height;
+                return (
+                  <div style={{ left, top }} className="absolute z-40 pointer-events-none transform -translate-x-1/2 -translate-y-1/2">
+                    <div className="w-6 h-6 rounded-full bg-transparent border-2 border-yellow-400 animate-pulse"></div>
+                  </div>
+                );
+              } catch (e) {
+                return null;
+              }
+            })()
           )}
           
           {/* Coordinate Search */}

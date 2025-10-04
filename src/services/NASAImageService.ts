@@ -21,6 +21,7 @@ export interface Layer {
   baseUrl: string;
   tileFormat: string;
   maxZoom: number;
+  projection?: 'webmercator' | 'trek' | 'image';
   type?: 'xyz' | 'dzi' | 'iiif' | 'image';
   urlOrder?: 'z-y-x' | 'z-x-y';
   minLevel?: number;
@@ -42,7 +43,8 @@ const CELESTIAL_BODIES: CelestialBody[] = [
         dataSource: 'NASA GIBS',
         baseUrl: 'https://gibs-b.earthdata.nasa.gov/wmts/epsg3857/best',
         tileFormat: 'jpg',
-        maxZoom: 12
+        maxZoom: 12,
+        projection: 'webmercator'
       },
       {
         id: 'MODIS_Terra_CorrectedReflectance_Bands367',
@@ -53,7 +55,8 @@ const CELESTIAL_BODIES: CelestialBody[] = [
         dataSource: 'NASA GIBS',
         baseUrl: 'https://gibs-c.earthdata.nasa.gov/wmts/epsg3857/best',
         tileFormat: 'jpg',
-        maxZoom: 12
+        maxZoom: 12,
+        projection: 'webmercator'
       },
       {
         id: 'MODIS_Terra_Land_Surface_Temp_Day',
@@ -64,7 +67,8 @@ const CELESTIAL_BODIES: CelestialBody[] = [
         dataSource: 'NASA GIBS',
         baseUrl: 'https://gibs-a.earthdata.nasa.gov/wmts/epsg3857/best',
         tileFormat: 'png',
-        maxZoom: 12
+        maxZoom: 12,
+        projection: 'webmercator'
       }
     ]
   },
@@ -80,12 +84,13 @@ const CELESTIAL_BODIES: CelestialBody[] = [
         description: 'Lunar Reconnaissance Orbiter WAC global mosaic',
         resolution: '100m',
         category: 'Base Layers',
-        dataSource: 'NASA Trek',
+  dataSource: 'NASA Trek',
         // Adjusted for proper XYZ tile rendering: use {z}/{y}/{x} placeholders
         baseUrl: 'https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/default/default028mm/{z}/{y}/{x}.jpg',
         tileFormat: 'jpg',
         maxZoom: 9,
         type: 'xyz',
+        projection: 'trek',
         minLevel: 4
       }
     ]
@@ -102,11 +107,12 @@ const CELESTIAL_BODIES: CelestialBody[] = [
         description: 'Global color mosaic of Mars (Viking MDIM2.1)',
         resolution: '250m',
         category: 'Base Layers',
-        dataSource: 'NASA Trek',
+  dataSource: 'NASA Trek',
         baseUrl: 'https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/default/default028mm/{z}/{y}/{x}.jpg',
         tileFormat: 'jpg',
         maxZoom: 9,
         type: 'xyz',
+        projection: 'trek',
         minLevel: 4
       },
       {
@@ -115,12 +121,13 @@ const CELESTIAL_BODIES: CelestialBody[] = [
         description: 'Color shaded relief map of Mars from MGS MOLA',
         resolution: '463m',
         category: 'Base Layers',
-        dataSource: 'NASA Trek',
+  dataSource: 'NASA Trek',
         // Adjusted for proper XYZ tile rendering: remove hardcoded tile path, use {z}/{y}/{x} placeholders
         baseUrl: 'https://trek.nasa.gov/tiles/Mars/EQ/Mars_MGS_MOLA_ClrShade_merge_global_463m/1.0.0/default/default028mm/{z}/{y}/{x}.jpg',
         tileFormat: 'jpg',
         maxZoom: 15,
         type: 'xyz',
+        projection: 'trek',
         minLevel: 0
       }
     ]
@@ -142,7 +149,9 @@ const CELESTIAL_BODIES: CelestialBody[] = [
         baseUrl: 'https://assets.science.nasa.gov/content/dam/science/missions/hubble/galaxies/andromeda/Hubble_M31Mosaic_2025_10552x2468_STScI-01JGY92V0Z2HJTVH605N4WH9XQ.jpg',
         tileFormat: 'jpg',
         maxZoom: 8,
-        type: 'image'
+        type: 'image',
+        // this is a raw image with known pixel dims encoded in the resolution string
+        projection: 'image'
       },
       {
         id: 'Hubble_Andromeda_Compass',
@@ -154,7 +163,8 @@ const CELESTIAL_BODIES: CelestialBody[] = [
         baseUrl: 'https://assets.science.nasa.gov/content/dam/science/missions/hubble/galaxies/andromeda/Hubble_M31Mosaic_Compass_7680x4320_STScI-01JGYCFA9BHKB7V0W7SKDKND29.jpg',
         tileFormat: 'jpg',
         maxZoom: 8,
-        type: 'image'
+        type: 'image',
+        projection: 'image'
       }
     ]
   }
@@ -166,6 +176,7 @@ export interface TileSource {
   layer: string;
   width?: number;
   height?: number;
+  projection?: 'webmercator' | 'trek' | 'image';
 }
 
 export class NASAImageService {
@@ -245,8 +256,14 @@ export class NASAImageService {
       url,
       date: imageDate,
       layer: layerId,
-      width: 256,
-      height: 256
+      // Provide a best-effort width/height for downstream coordinate conversions
+      width: layer.type === 'image' && typeof layer.resolution === 'string' && /x/i.test(layer.resolution)
+        ? parseInt(String(layer.resolution).split('x')[0], 10)
+        : Math.pow(2, layer.maxZoom) * 256,
+      height: layer.type === 'image' && typeof layer.resolution === 'string' && /x/i.test(layer.resolution)
+        ? parseInt(String(layer.resolution).split('x')[1], 10)
+        : Math.pow(2, layer.maxZoom) * 256,
+      projection: (layer as any).projection
     };
   }
 

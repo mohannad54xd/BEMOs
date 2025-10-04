@@ -1,4 +1,5 @@
 import { type ReactNode, useState } from 'react';
+import logoUrl from '../assets/logo.svg';
 import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -20,16 +21,20 @@ export const Layout = ({ children }: LayoutProps) => {
         <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between gap-4">
             <Link to="/" className="flex items-center gap-3">
-              <svg className="w-10 h-10" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                <defs>
-                  <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stopColor="#2563eb" />
-                    <stop offset="1" stopColor="#7c3aed" />
-                  </linearGradient>
-                </defs>
-                <rect width="48" height="48" rx="8" fill="url(#logoGrad)" />
-                <circle cx="24" cy="17" r="6" fill="white" fillOpacity="0.12" />
-              </svg>
+              {logoUrl ? (
+                <img src={logoUrl} alt="NASA Space Apps" className="w-10 h-10 object-contain" />
+              ) : (
+                <svg className="w-10 h-10" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                  <defs>
+                    <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stopColor="#2563eb" />
+                      <stop offset="1" stopColor="#7c3aed" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="48" height="48" rx="8" fill="url(#logoGrad)" />
+                  <circle cx="24" cy="17" r="6" fill="white" fillOpacity="0.12" />
+                </svg>
+              )}
               <div className="text-lg md:text-2xl font-futuristic text-white leading-tight">
                 <span className="font-bold">NASA</span> Space Apps
               </div>

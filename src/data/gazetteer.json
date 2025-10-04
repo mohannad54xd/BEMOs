@@ -1,0 +1,25 @@
+{
+  "earth": {
+    "Hurricane": { "lat": 25.0, "lng": -70.0 },
+    "Volcano": { "lat": -16.25, "lng": -71.5 },
+    "Deforestation": { "lat": -3.4653, "lng": -62.2159 },
+    "Ice Sheet": { "lat": 82.5, "lng": -62.0 },
+    "Ocean Current": { "lat": 30.0, "lng": -40.0 }
+  },
+  "moon": {
+    "Tycho": { "lat": -43.3, "lng": -11.2 },
+    "Mare Tranquillitatis": { "lat": 8.5, "lng": 31.4 },
+    "Copernicus": { "lat": 9.62, "lng": -20.08 },
+    "Olympus Mons": { "lat": 18.65, "lng": 226.2 }
+  },
+  "mars": {
+    "Olympus Mons": { "lat": 18.65, "lng": 226.2 },
+    "Valles Marineris": { "lat": -14.6, "lng": -60.1 },
+    "Gale Crater": { "lat": -5.4, "lng": 137.8 },
+    "Polar Ice Cap": { "lat": 85.0, "lng": 0.0 }
+  },
+  "andromeda": {
+    "Galaxy Core": { "lat": 0.0, "lng": 0.0 },
+    "Star Cluster": { "lat": 0.5, "lng": 1.0 }
+  }
+}
