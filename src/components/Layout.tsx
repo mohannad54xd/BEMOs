@@ -1,5 +1,5 @@
 import { type ReactNode, useState } from 'react';
-import logoUrl from '../assets/logo.svg';
+import logoUrl from '../assets/bemos.jpg';
 import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -22,7 +22,7 @@ export const Layout = ({ children }: LayoutProps) => {
           <div className="flex items-center justify-between gap-4">
             <Link to="/" className="flex items-center gap-3">
               {logoUrl ? (
-                <img src={logoUrl} alt="NASA Space Apps" className="w-10 h-10 object-contain" />
+                <img src={logoUrl} alt="BEMOs" className="w-10 h-10 object-contain" />
               ) : (
                 <svg className="w-10 h-10" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
                   <defs>
@@ -36,7 +36,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 </svg>
               )}
               <div className="text-lg md:text-2xl font-futuristic text-white leading-tight">
-                <span className="font-bold">NASA</span> Space Apps
+                <span className="font-bold">BEMOs</span>
               </div>
             </Link>
 
@@ -138,7 +138,7 @@ export const Layout = ({ children }: LayoutProps) => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <div className="text-lg font-semibold">NASA Space Apps</div>
+              <div className="text-lg font-semibold">BEMOs</div>
               <p className="text-gray-300 text-sm mt-2 max-w-sm">Explore planetary and Earth datasets with a modern viewer, time slider, and annotation tools. Built for learning, research, and discovery.</p>
               <div className="flex items-center gap-3 mt-4">
                 <a href="https://github.com/yourusername/nasa-space-apps-2025" target="_blank" rel="noopener noreferrer" className="p-2 rounded-md bg-white/6 hover:bg-white/8 transition">
@@ -170,7 +170,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
             </div>
 
-            <div className="md:col-span-3 mt-6 text-xs text-gray-500 text-center">© {new Date().getFullYear()} NASA Space Apps — This project uses NASA data and imagery. All NASA content remains in the public domain.</div>
+            <div className="md:col-span-3 mt-6 text-xs text-gray-500 text-center">© {new Date().getFullYear()} BEMOs — This project uses NASA data and imagery. All NASA content remains in the public domain.</div>
           </div>
         </div>
       </footer>
