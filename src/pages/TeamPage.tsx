@@ -1,74 +1,43 @@
 import { motion } from 'framer-motion';
 
 export const TeamPage = () => {
-  /**
-   * An array of team member profiles, each representing a contributor to the project.
-   *
-   * @typeParam name - The full name of the team member.
-   * @typeParam role - The primary role(s) and responsibilities of the team member within the project.
-   * @typeParam bio - A brief biography describing the member's background and contributions.
-   * @typeParam skills - A list of key skills and technologies associated with the team member.
-   * @typeParam github - The URL to the team member's GitHub profile.
-   * @typeParam linkedin - The URL to the team member's LinkedIn profile.
-   * @typeParam photo - (Optional) The URL to the team member's profile photo. If not provided, initials will be shown.
-   */
   const teamMembers = [
     {
-      name: 'Mohannad Essam',
+      name: 'Alex Johnson',
       role: 'Project Lead & Full Stack Developer',
       bio: 'Passionate about space exploration and data visualization. Led the development of the interactive viewer and NASA data integration.',
       skills: ['React', 'TypeScript', 'OpenSeadragon', 'NASA APIs'],
-      github: 'https://github.com/mohannad54xd',
-      linkedin: 'https://linkedin.com/in/mohannad-essam-092aa02b9'
-      ,
-      photo: '/src/assets/team/mohannad.jpg'
+      github: 'https://github.com/alexjohnson',
+      linkedin: 'https://linkedin.com/in/alexjohnson'
     },
     {
-      name: 'Mohannad Abd elnaby',
+      name: 'Sarah Chen',
       role: 'UI/UX Designer & Frontend Developer',
       bio: 'Specializes in creating intuitive user experiences for complex data visualization. Designed the responsive interface and animations.',
       skills: ['Framer Motion', 'Tailwind CSS', 'User Research', 'Prototyping'],
-      github: 'https://github.com/Mands-s',
-      linkedin: 'https://www.linkedin.com/in/mohanad-abdelnaby-74130a2b3/'
-      ,
-      photo: '/src/assets/team/mands.jpg'
+      github: 'https://github.com/sarahchen',
+      linkedin: 'https://linkedin.com/in/sarahchen'
     },
     {
-      name: 'Yehia Ahmed',
+      name: 'Marcus Rodriguez',
       role: 'Data Scientist & Backend Developer',
       bio: 'Expert in NASA data formats and geospatial analysis. Implemented the temporal data processing and layer management systems.',
       skills: ['Python', 'Geospatial Analysis', 'NASA GIBS', 'Data Processing'],
       github: 'https://github.com/marcusrodriguez',
       linkedin: 'https://linkedin.com/in/marcusrodriguez'
-      ,
-      photo: '/src/assets/team/yehia.jpg'
     },
     {
-      name: 'Lauran Fayed',
+      name: 'Dr. Emily Watson',
       role: 'Scientific Advisor & Domain Expert',
       bio: 'Astrophysicist with expertise in space mission data. Provides scientific guidance and ensures data accuracy and interpretation.',
       skills: ['Astrophysics', 'Space Missions', 'Data Analysis', 'Scientific Communication'],
       github: 'https://github.com/emilywatson',
       linkedin: 'https://linkedin.com/in/emilywatson'
-      ,
-      photo: '/src/assets/team/lauran.jpg'
-    },
-
-    {
-      name: 'Eman El Sayed',
-      role: 'Frontend Engineer & Accessibility Lead',
-      bio: 'Designs inclusive interfaces and implements accessibility-first components. Focuses on responsive layouts and keyboard navigation.',
-      skills: ['Accessibility', 'React', 'Tailwind CSS', 'Inclusive Design'],
-      github: 'https://github.com/aishakhan',
-      linkedin: 'https://www.linkedin.com/in/aisha-khan-ux/',
-      photo: '/src/assets/team/eman.jpg'
     }
-
-    
   ];
 
   return (
-  <div className="min-h-screen">
+    <div className="min-h-screen bg-black">
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-b from-blue-900/20 to-black">
         <div className="container mx-auto px-4">
@@ -103,17 +72,9 @@ export const TeamPage = () => {
               >
                 <div className="flex flex-col md:flex-row gap-6">
                   <div className="flex-shrink-0">
-                    {member.photo ? (
-                      <img
-                        src={member.photo}
-                        alt={member.name}
-                        className="w-24 h-24 rounded-full object-cover border-2 border-gray-700"
-                      />
-                    ) : (
-                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-2xl font-bold text-white">
-                        {member.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                    )}
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-2xl font-bold text-white">
+                      {member.name.split(' ').map(n => n[0]).join('')}
+                    </div>
                   </div>
                   
                   <div className="flex-1">
@@ -221,7 +182,7 @@ export const TeamPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a 
-                href="https://github.com/yourusername/nasa-space-apps-2025"
+                href="https://github.com/mohannad54xd/bemos"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors"
@@ -232,7 +193,7 @@ export const TeamPage = () => {
                 View on GitHub
               </a>
               <a 
-                href="mailto:team@nasa-space-apps-2025.com"
+                href="mailto:mohannadessam54@gmail.com"
                 className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
