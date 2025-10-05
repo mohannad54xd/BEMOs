@@ -21,7 +21,7 @@ export const TeamPage = () => {
       github: 'https://github.com/mohannad54xd',
       linkedin: 'https://linkedin.com/in/mohannad-essam-092aa02b9'
       ,
-      photo: '/src/assets/team/mohannad.jpg'
+      photo: '/team/mohannad.jpg'
     },
     {
       name: 'Mohannad Abd elnaby',
@@ -31,7 +31,7 @@ export const TeamPage = () => {
       github: 'https://github.com/Mands-s',
       linkedin: 'https://www.linkedin.com/in/mohanad-abdelnaby-74130a2b3/'
       ,
-      photo: '/src/assets/team/mands.jpg'
+      photo: '/team/mands.jpg'
     },
     {
       name: 'Yehia Ahmed',
@@ -41,7 +41,7 @@ export const TeamPage = () => {
       github: 'https://github.com/marcusrodriguez',
       linkedin: 'https://linkedin.com/in/marcusrodriguez'
       ,
-      photo: '/src/assets/team/yehia.jpg'
+      photo: '/team/yehia.jpg'
     },
     {
       name: 'Lauran Fayed',
@@ -51,7 +51,7 @@ export const TeamPage = () => {
       github: 'https://github.com/emilywatson',
       linkedin: 'https://linkedin.com/in/emilywatson'
       ,
-      photo: '/src/assets/team/lauran.jpg'
+      photo: '/team/lauran.jpg'
     },
 
     {
@@ -61,7 +61,7 @@ export const TeamPage = () => {
       skills: ['Accessibility', 'React', 'Tailwind CSS', 'Inclusive Design'],
       github: 'https://github.com/aishakhan',
       linkedin: 'https://www.linkedin.com/in/aisha-khan-ux/',
-      photo: '/src/assets/team/eman.jpg'
+      photo: '/team/eman.jpg'
     }
 
     
