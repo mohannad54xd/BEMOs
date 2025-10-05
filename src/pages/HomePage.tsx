@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import Cards from '../components/Cards';
 
 export const HomePage = () => {
   return (
@@ -133,6 +134,27 @@ export const HomePage = () => {
           </div>
         </div>
       </section>
+      {/* Games Section (Cards component) */}
+      <section className="py-16 md:py-20 bg-black">
+        <div className="container mx-auto px-4">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-3xl md:text-4xl font-bold mb-8 text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
+          >
+            Games & Activities
+          </motion.h2>
+        </div>
+        
+        {/* Use shared Cards component for games */}
+        <Cards title="Play & Learn" items={[
+          { title: 'Space Adventure', description: 'Arcade-style shooter — pilot a ship and rack points.', imageUrl: '/articles.jpeg', link: '/games/space-adventure' },
+          { title: 'Space Quiz Challenge', description: 'Timed quiz with selectable difficulty.', imageUrl: '/exoplanets.jpg', link: '/games/space-quiz-challenge' },
+          { title: 'Quick Quiz', description: 'Short multiple-choice quiz for a quick learning burst.', imageUrl: '/moon.jpg', link: '/games/quiz/play' },
+          { title: 'VR Exploration', description: 'Virtual Reality Explorer', imageUrl: '/vr.jpg', link: '/games/vr-exploration' }
+        ]} />
+      </section>
 
       {/* About Section */}
       <section className="py-16 md:py-20 bg-black">
@@ -228,6 +250,8 @@ export const HomePage = () => {
           </motion.div>
         </div>
       </section>
+
+      
     </div>
   );
 };

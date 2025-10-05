@@ -1,5 +1,5 @@
 import { type ReactNode, useState } from 'react';
-import logoUrl from '../assets/bemos.jpg';
+import logoUrl from '/logo.svg';
 import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seismic Event Explorer</title>
+
+    <!-- Leaflet CSS for the map -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: 0 auto 20px auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        form label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        form input[type="date"],
+        form input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+        }
+
+        form button {
+            grid-column: span 2;
+            background-color: #007BFF;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .error {
+            color: red;
+            grid-column: span 2;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Seismic Event Explorer</h1>
+
+    <form id="location-form">
+        <div>
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" value="2024-10-03">
+        </div>
+        <div>
+            <label for="latitude">Latitude:</label>
+            <input type="number" id="latitude" name="latitude" step="0.0001" placeholder="Enter latitude" required>
+        </div>
+        <div>
+            <label for="longitude">Longitude:</label>
+            <input type="number" id="longitude" name="longitude" step="0.0001" placeholder="Enter longitude" required>
+        </div>
+        <div>
+            <label for="depth">Depth:</label>
+            <input type="number" id="depth" name="depth" placeholder="Enter Depth" required>
+        </div>
+        <div class="error" id="error-message"></div>
+        <button type="submit">Show Location</button>
+    </form>
+
+    <div id="map"></div>
+
+    <!-- Leaflet JavaScript for the map -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([20, 0], 2);  // Default view of the world
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        document.getElementById('location-form').addEventListener('submit', function(event) {
+            event.preventDefault();  // Prevent form submission
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = '';  // Clear previous error messages
+
+            const latitude = parseFloat(document.getElementById('latitude').value);
+            const longitude = parseFloat(document.getElementById('longitude').value);
+            const depth = document.getElementById('depth').value;
+
+            // Validate latitude and longitude
+            if (latitude < -90 || latitude > 90) {
+                errorMessage.textContent = 'Invalid latitude! It must be between -90 and 90.';
+                return;
+            }
+
+            if (longitude < -180 || longitude > 180) {
+                errorMessage.textContent = 'Invalid longitude! It must be between -180 and 180.';
+                return;
+            }
+
+            // Fetch earthquake data from USGS using API Key
+            const apiKey = 'vkojKcKEybhcD6Zhn8OEaoaJbT6Lz7pjwhCf7TG8';
+            const apiUrl = `https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson?apikey=${apiKey}`;
+            
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear any existing markers
+                    map.eachLayer(function (layer) {
+                        if (layer instanceof L.Marker) {
+                            map.removeLayer(layer);
+                        }
+                    });
+
+                    // Add markers for each earthquake event
+                    data.features.forEach(event => {
+                        const coordinates = event.geometry.coordinates;
+                        const eqLatitude = coordinates[1];
+                        const eqLongitude = coordinates[0];
+                        const eqDepth = coordinates[2];
+                        const magnitude = event.properties.mag;
+
+                        // Add marker to the map
+                        const marker = L.marker([eqLatitude, eqLongitude]).addTo(map);
+                        marker.bindPopup(`<b>Magnitude:</b> ${magnitude}<br><b>Depth:</b> ${eqDepth} km`);
+                    });
+
+                    // Set the view of the map to the provided latitude and longitude
+                    map.setView([latitude, longitude], 5);
+                    // Add a marker for the user-provided location
+                    const userMarker = L.marker([latitude, longitude]).addTo(map);
+                    userMarker.bindPopup(`<b>Your Location:</b><br>Depth: ${depth} km<br>Latitude: ${latitude}<br>Longitude: ${longitude}`).openPopup();
+                })
+                .catch(error => console.error('Error fetching earthquake data:', error));
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+/* Minimal styles for SpaceAdventure game preview */
+.game-canvas {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, rgba(20,24,38,0.9) 0%, rgba(0,0,0,1) 70%);
+  overflow: hidden;
+}
+
+/* simple ship/enemy/projectile styles */
+.ship {
+  transition: transform 0.08s linear;
+}
+
+.enemy svg, .ship svg {
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.6));
+}
+
+/* ensure mobile touch controls are usable */
+@media (pointer: coarse) {
+  .game-controls { touch-action: none; }
+}
